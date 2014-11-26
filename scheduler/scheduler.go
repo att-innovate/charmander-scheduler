@@ -1,8 +1,8 @@
 package scheduler
 
 import (
-	"github.com/att/charmander-scheduler/manager"
-	"github.com/att/charmander-scheduler/mesosproto"
+	"github.com/att-innovate/charmander-scheduler/manager"
+	"github.com/att-innovate/charmander-scheduler/mesosproto"
 )
 
 type Scheduler struct {

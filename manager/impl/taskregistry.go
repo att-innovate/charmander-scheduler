@@ -26,7 +26,7 @@ import (
 	"errors"
 	"sync"
 
-	managerInterface "github.com/att/charmander-scheduler/manager"
+	managerInterface "github.com/att-innovate/charmander-scheduler/manager"
 )
 
 var ErrNotExists = errors.New("task does not exist")

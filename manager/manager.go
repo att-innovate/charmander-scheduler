@@ -23,7 +23,7 @@
 package manager
 
 import (
-	"github.com/att/charmander-scheduler/mesosproto"
+	"github.com/att-innovate/charmander-scheduler/mesosproto"
 )
 
 type Manager interface {

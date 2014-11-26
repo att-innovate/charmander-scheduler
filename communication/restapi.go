@@ -28,13 +28,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/att/charmander-scheduler/manager"
+	"github.com/att-innovate/charmander-scheduler/manager"
 
 	"github.com/golang/glog"
 
-	adminapi "github.com/att/charmander-scheduler/communication/api/admin"
-	clientapi "github.com/att/charmander-scheduler/communication/api/client"
-	mesosapi "github.com/att/charmander-scheduler/communication/api/mesos"
+	adminapi "github.com/att-innovate/charmander-scheduler/communication/api/admin"
+	clientapi "github.com/att-innovate/charmander-scheduler/communication/api/client"
+	mesosapi "github.com/att-innovate/charmander-scheduler/communication/api/mesos"
 )
 
 func InitRestHandler(manager manager.Manager) error {

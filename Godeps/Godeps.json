@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/att/charmander-scheduler",
+	"ImportPath": "github.com/att-innovate/charmander-scheduler",
 	"GoVersion": "go1.3.3",
 	"Deps": [
 		{

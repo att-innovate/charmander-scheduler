@@ -25,10 +25,10 @@ package impl
 import (
 	"github.com/golang/glog"
 
-	"github.com/att/charmander-scheduler/scheduler"
-	"github.com/att/charmander-scheduler/mesosproto"
+	"github.com/att-innovate/charmander-scheduler/scheduler"
+	"github.com/att-innovate/charmander-scheduler/mesosproto"
 
-	managerInterface "github.com/att/charmander-scheduler/manager"
+	managerInterface "github.com/att-innovate/charmander-scheduler/manager"
 )
 
 // my scheduler

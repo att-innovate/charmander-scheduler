@@ -31,9 +31,9 @@ import (
 	"code.google.com/p/gogoprotobuf/proto"
 	"github.com/golang/glog"
 
-	"github.com/att/charmander-scheduler/manager"
-	"github.com/att/charmander-scheduler/upid"
-	"github.com/att/charmander-scheduler/mesosproto"
+	"github.com/att-innovate/charmander-scheduler/manager"
+	"github.com/att-innovate/charmander-scheduler/upid"
+	"github.com/att-innovate/charmander-scheduler/mesosproto"
 )
 
 type MesosHandler struct {

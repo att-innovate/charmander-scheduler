@@ -22,7 +22,7 @@
 
 package manager
 
-import "github.com/att/charmander-scheduler/mesosproto"
+import "github.com/att-innovate/charmander-scheduler/mesosproto"
 
 type Task struct {
 	ID          string    `json:"id"`

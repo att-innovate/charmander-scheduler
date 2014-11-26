@@ -29,7 +29,7 @@ import (
 	"html"
 	"encoding/json"
 
-	"github.com/att/charmander-scheduler/manager"
+	"github.com/att-innovate/charmander-scheduler/manager"
 )
 
 type ClientHandler struct {

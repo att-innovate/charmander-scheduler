@@ -32,12 +32,12 @@ import (
 	"code.google.com/p/gogoprotobuf/proto"
 	"github.com/golang/glog"
 
-	"github.com/att/charmander-scheduler/communication"
-	"github.com/att/charmander-scheduler/mesosproto"
-	"github.com/att/charmander-scheduler/scheduler"
-	"github.com/att/charmander-scheduler/upid"
+	"github.com/att-innovate/charmander-scheduler/communication"
+	"github.com/att-innovate/charmander-scheduler/mesosproto"
+	"github.com/att-innovate/charmander-scheduler/scheduler"
+	"github.com/att-innovate/charmander-scheduler/upid"
 
-	managerInterface "github.com/att/charmander-scheduler/manager"
+	managerInterface "github.com/att-innovate/charmander-scheduler/manager"
 )
 
 

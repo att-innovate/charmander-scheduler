@@ -27,8 +27,8 @@ import (
 
 	"github.com/golang/glog"
 
-	managerImpl   "github.com/att/charmander-scheduler/manager/impl"
-	schedulerImpl "github.com/att/charmander-scheduler/scheduler/impl"
+	managerImpl   "github.com/att-innovate/charmander-scheduler/manager/impl"
+	schedulerImpl "github.com/att-innovate/charmander-scheduler/scheduler/impl"
 )
 
 // cmdline arguments

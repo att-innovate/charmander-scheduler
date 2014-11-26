@@ -24,7 +24,7 @@ import (
 
 	"code.google.com/p/gogoprotobuf/proto"
 
-	"github.com/att/charmander-scheduler/upid"
+	"github.com/att-innovate/charmander-scheduler/upid"
 )
 
 func NewMessage(
