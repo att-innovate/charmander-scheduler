@@ -36,7 +36,12 @@ import (
 
 func MesosMasterReachable(masterAddress string) bool {
 	_, err := http.Get("http://" + masterAddress)
-	return err == nil
+	if err != nil {
+		glog.Errorf("Failed to connect to mesos %v: %v\n", masterAddress, err)
+		return err
+	}
+
+	return true
 }
 
 func SendMessageToMesos(sender *upid.UPID, msg *Message) error {
