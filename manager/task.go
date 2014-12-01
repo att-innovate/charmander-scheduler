@@ -45,6 +45,7 @@ type Task struct {
 	Ports       []*Port   `json:"ports,omitempty"`
 
 	InternalID  string
+	SlaveID     string
 	CreatedAt   int64
 	TaskInfo   *mesosproto.TaskInfo
 	RequestSent bool

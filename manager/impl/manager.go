@@ -171,6 +171,7 @@ func (self *manager) updateNodeRegistry(offers []*mesosproto.Offer) {
 }
 
 func (self *manager) enforceSLAs(offers []*mesosproto.Offer) []*mesosproto.Offer {
+	result := offers
 	var taskRequests []*managerInterface.Task
 	taskRequests = self.GetTaskRequests()
 
@@ -182,12 +183,13 @@ func (self *manager) enforceSLAs(offers []*mesosproto.Offer) []*mesosproto.Offer
 			for _, offer := range offers {
 				if resolveNodeName(*offer) == taskRequest.NodeName {
 					self.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
+					result = removeOfferFromList(result, offer)
 				}
 			}
 		}
 	}
 
-	return offers
+	return result
 }
 
 func resolveNodeName(offer mesosproto.Offer) string {
@@ -200,6 +202,21 @@ func resolveNodeName(offer mesosproto.Offer) string {
 	return "notfound"
 }
 
+func removeOfferFromList(offers []*mesosproto.Offer, offer *mesosproto.Offer) []*mesosproto.Offer {
+	numberOfOffers := len(offers)
+	if numberOfOffers == 1 { return []*mesosproto.Offer {}}
+
+	result := make([]*mesosproto.Offer, numberOfOffers-1)
+	i :=  0
+	for _, value := range offers {
+		if offer.GetId().GetValue() == value.GetId().GetValue() { continue }
+		result[i] = value
+		i++
+	}
+
+	return result
+}
+
 func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateMessage) {
 	glog.Infof("Status Update %v\n", statusMessage)
 	status := statusMessage.GetUpdate().GetStatus()
@@ -208,14 +225,14 @@ func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateM
 	case  *status.State == mesosproto.TaskState_TASK_RUNNING:
 		task, _ := taskRegistry.Fetch(status.GetTaskId().GetValue())
 		task.Running= true
-		glog.Infoln("Running: ", task.InternalID)
+		task.SlaveID= status.GetSlaveId().GetValue()
+		glog.Infof("Running: %s on Slave: %s", task.InternalID, task.SlaveID)
 	case  *status.State == mesosproto.TaskState_TASK_FAILED:
 		taskRegistry.Delete(status.GetTaskId().GetValue())
 		glog.Infoln("Task Failed: ", status.GetTaskId().GetValue())
 	case  *status.State == mesosproto.TaskState_TASK_LOST:
-		task, _ := taskRegistry.Fetch(status.GetTaskId().GetValue())
-		task.RequestSent= false
-		glog.Infoln("Lost: ", task.InternalID)
+		taskRegistry.Delete(status.GetTaskId().GetValue())
+		glog.Infoln("Task Lost: ", status.GetTaskId().GetValue())
 	case  *status.State == mesosproto.TaskState_TASK_FINISHED:
 		taskRegistry.Delete(status.GetTaskId().GetValue())
 		glog.Infoln("Task Finished: ", status.GetTaskId().GetValue())
