@@ -1,5 +1,0 @@
-{
-    "id": "sim-cpu-rand",
-    "dockerimage": "docker.registry.foundry:80/sim-cpu-rand",
-    "mem": "100"
-}

@@ -57,9 +57,8 @@ func init() {
 				if matchFound { break }
 				if taskRequest.RequestSent { continue }
 
-				manager.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
-				taskRequest.RequestSent = true
-				matchFound = true
+//				manager.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
+//				matchFound = true
 			}
 
 			if !matchFound {

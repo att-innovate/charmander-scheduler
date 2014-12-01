@@ -22,40 +22,10 @@
 
 package manager
 
-import (
-	"encoding/json"
-
-	"github.com/att-innovate/charmander-scheduler/mesosproto"
-)
-
-const (
-	SLA_ONE_PER_NODE = "one-per-node"
-)
-
-type Task struct {
-	ID          string    `json:"id"`
-	DockerImage string    `json:"dockerimage"`
-	Mem         uint32    `json:"mem,string"`
-	Cpus        float64   `json:"cpus,string"`
-	Sla         string    `json:"sla"`
-	NodeType    string    `json:"nodetype"`
-	NodeName    string    `json:"nodename"`
-	Arguments   string    `json:"arguments,omitempty"`
-	Volumes     []*Volume `json:"volumes,omitempty"`
-	Ports       []*Port   `json:"ports,omitempty"`
-
-	InternalID  string
-	CreatedAt   int64
-	TaskInfo   *mesosproto.TaskInfo
-	RequestSent bool
-	Running     bool
-}
-
-func CopyTask(source Task) Task {
-	result := &Task{}
-
-	jsonEncoded, _ := json.Marshal(&source)
-	json.Unmarshal(jsonEncoded, &result)
-
-	return *result
+type Node struct {
+	ID              string    `json:"id"`
+	Hostname        string    `json:"hostname"`
+	NodeType        string    `json:"nodetype"`
+	NodeName        string    `json:"nodename"`
+	TimeOfLastOffer int64     `json:"timeoflastoffer"`
 }

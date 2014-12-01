@@ -29,7 +29,7 @@ import (
 	managerInterface "github.com/att-innovate/charmander-scheduler/manager"
 )
 
-var ErrNotExists = errors.New("task does not exist")
+var ErrTaskNotExists = errors.New("task does not exist")
 
 type TaskRegistry struct {
 	tasks map[string]*managerInterface.Task
@@ -55,13 +55,13 @@ func (taskRegistry *TaskRegistry) Fetch(id string) (*managerInterface.Task, erro
 
 	task, exists := taskRegistry.tasks[id]
 	if !exists {
-		return nil, ErrNotExists
+		return nil, ErrTaskNotExists
 	}
 
 	return task, nil
 }
 
-func (taskRegistry *TaskRegistry) Update(id string, task *managerInterface.Task) {
+func (taskRegistry *TaskRegistry) TimeOfLastOffer(id string, task *managerInterface.Task) {
 	taskRegistry.Lock()
 	defer taskRegistry.Unlock()
 

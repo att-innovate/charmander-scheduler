@@ -2,6 +2,7 @@
     "id": "cadvisor",
     "dockerimage": "google/cadvisor:0.4.1",
     "mem": "100",
+    "sla": "one-per-node",
     "volumes": [
         {
             "host_path":"/rootfs",
@@ -26,7 +27,7 @@
     ],
     "ports": [
         {
-            "host_port":"32000",
+            "host_port":"31500",
             "container_port":"8080"
         }
     ]

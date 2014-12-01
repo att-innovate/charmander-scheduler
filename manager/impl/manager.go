@@ -42,6 +42,7 @@ import (
 
 
 var taskRegistry = NewTaskRegistry()
+var nodeRegistry = NewNodeRegistry()
 
 func New(
 	scheduler *scheduler.Scheduler,
@@ -131,10 +132,72 @@ func (self *manager) HandleFrameworkRegistered(frameworkId string) {
 	}
 }
 
-func (self *manager) HandleResourceOffered(offers []*mesosproto.Offer){
+func (self *manager) HandleResourceOffered(offers []*mesosproto.Offer) {
+	self.updateNodeRegistry(offers)
+
+	offers= self.enforceSLAs(offers)
+
 	if self.scheduler != nil && self.scheduler.ResourceOffers != nil {
 		self.scheduler.ResourceOffers(self, offers)
 	}
+}
+
+func (self *manager) updateNodeRegistry(offers []*mesosproto.Offer) {
+	for _, offer := range offers {
+		slaveID := offer.GetSlaveId().GetValue()
+		if nodeRegistry.Exists(slaveID) {
+			nodeRegistry.UpdateTimeOfLastOffer(slaveID)
+			continue
+		}
+
+		node := &managerInterface.Node {
+			ID: slaveID,
+			Hostname: offer.GetHostname(),
+			TimeOfLastOffer: time.Now().Unix(),
+		}
+
+		for _, attribute := range offer.GetAttributes() {
+			if *attribute.Name == "nodename" {
+				node.NodeName = attribute.Text.GetValue()
+			} else if *attribute.Name == "nodetype" {
+				node.NodeType = attribute.Text.GetValue()
+			}
+		}
+
+		nodeRegistry.Register(slaveID, node)
+
+		glog.Infoln("New Node Registered: ", node)
+	}
+}
+
+func (self *manager) enforceSLAs(offers []*mesosproto.Offer) []*mesosproto.Offer {
+	var taskRequests []*managerInterface.Task
+	taskRequests = self.GetTaskRequests()
+
+	for _, taskRequest := range taskRequests {
+		if taskRequest.Running { continue }
+		if len(taskRequest.Sla) == 0 {continue }
+
+		if taskRequest.Sla == managerInterface.SLA_ONE_PER_NODE {
+			for _, offer := range offers {
+				if resolveNodeName(*offer) == taskRequest.NodeName {
+					self.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
+				}
+			}
+		}
+	}
+
+	return offers
+}
+
+func resolveNodeName(offer mesosproto.Offer) string {
+	for _, attribute := range offer.GetAttributes() {
+		if *attribute.Name == "nodename" {
+			return attribute.Text.GetValue()
+		}
+	}
+
+	return "notfound"
 }
 
 func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateMessage) {
@@ -149,6 +212,10 @@ func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateM
 	case  *status.State == mesosproto.TaskState_TASK_FAILED:
 		taskRegistry.Delete(status.GetTaskId().GetValue())
 		glog.Infoln("Task Failed: ", status.GetTaskId().GetValue())
+	case  *status.State == mesosproto.TaskState_TASK_LOST:
+		task, _ := taskRegistry.Fetch(status.GetTaskId().GetValue())
+		task.RequestSent= false
+		glog.Infoln("Lost: ", task.InternalID)
 	case  *status.State == mesosproto.TaskState_TASK_FINISHED:
 		taskRegistry.Delete(status.GetTaskId().GetValue())
 		glog.Infoln("Task Finished: ", status.GetTaskId().GetValue())
@@ -158,6 +225,18 @@ func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateM
 }
 
 func (self *manager) HandleRunDockerImage(task *managerInterface.Task) {
+	if task.Sla == managerInterface.SLA_ONE_PER_NODE {
+		for _, node := range nodeRegistry.Nodes() {
+			newTask := managerInterface.CopyTask(*task)
+			newTask.NodeName= node.NodeName
+			self.handleRunDockerImageImpl(&newTask)
+		}
+	} else {
+		self.handleRunDockerImageImpl(task)
+	}
+}
+
+func (self *manager) handleRunDockerImageImpl(task *managerInterface.Task) {
 	id := fmt.Sprintf("%v-%v", strings.Replace(task.ID, " ", "", -1), time.Now().UnixNano())
 	memory := float64(task.Mem)
 	arguments := strings.Split(task.Arguments, " ")
@@ -275,6 +354,8 @@ func (self *manager) AcceptOffer(offerId *mesosproto.OfferID, slaveId *mesosprot
 	messagePackage := communication.NewMessage(self.masterUPID, message, nil)
 	if err := communication.SendMessageToMesos(self.selfUPID, messagePackage); err != nil {
 		glog.Errorf("Failed to send AcceptOffer message: %v\n", err)
+	} else {
+		taskRequest.RequestSent = true
 	}
 
 }
