@@ -125,6 +125,19 @@ func (self *manager) GetTaskRequests() []*managerInterface.Task {
 	return taskRegistry.Tasks()
 }
 
+func (self *manager) ResourceRequirementsWouldMatch(offer *mesosproto.Offer, taskRequest *managerInterface.Task) bool {
+	for _, resource := range offer.GetResources() {
+		switch {
+		case *resource.Name == "cpus":
+			if resource.Scalar.GetValue() < float64(taskRequest.Cpus) { return false }
+		case *resource.Name == "mem":
+			if resource.Scalar.GetValue() < float64(taskRequest.Mem) { return false }
+		}
+	}
+
+	return true
+}
+
 func (self *manager) HandleFrameworkRegistered(frameworkId string) {
 	self.frameworkId = frameworkId
 	if self.scheduler != nil && self.scheduler.Registered != nil {
@@ -182,8 +195,10 @@ func (self *manager) enforceSLAs(offers []*mesosproto.Offer) []*mesosproto.Offer
 		if taskRequest.Sla == managerInterface.SLA_ONE_PER_NODE {
 			for _, offer := range offers {
 				if resolveNodeName(*offer) == taskRequest.NodeName {
-					self.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
-					result = removeOfferFromList(result, offer)
+					if self.ResourceRequirementsWouldMatch(offer, taskRequest) {
+						self.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
+						result = removeOfferFromList(result, offer)
+					}
 				}
 			}
 		}
