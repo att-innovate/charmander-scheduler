@@ -279,7 +279,7 @@ func (self *manager) HandleRunDockerImage(task *managerInterface.Task) {
 func (self *manager) handleRunDockerImageImpl(task *managerInterface.Task) {
 	id := fmt.Sprintf("%v-%v", strings.Replace(task.ID, " ", "", -1), time.Now().UnixNano())
 	memory := float64(task.Mem)
-	arguments := strings.Split(task.Arguments, " ")
+	arguments := []string {task.Arguments}
 	portResources := []*mesosproto.Value_Range{}
 	cpus := float64(0.1)
 	if task.Cpus > 0 {
