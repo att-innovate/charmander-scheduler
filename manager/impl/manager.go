@@ -134,6 +134,14 @@ func (self *manager) ResourceRequirementsWouldMatch(offer *mesosproto.Offer, tas
 			if resource.Scalar.GetValue() < float64(taskRequest.Mem) { return false }
 		}
 	}
+	for _, attribute := range offer.GetAttributes() {
+		switch {
+		case *attribute.Name == "nodetype":
+			if len(taskRequest.NodeType) > 0 && attribute.Text.GetValue() != taskRequest.NodeType { return false }
+		case *attribute.Name == "nodename":
+			if len(taskRequest.NodeName) > 0 && attribute.Text.GetValue() != taskRequest.NodeName { return false }
+		}
+	}
 
 	return true
 }
