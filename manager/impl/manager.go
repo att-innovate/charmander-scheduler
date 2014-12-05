@@ -76,7 +76,14 @@ type manager struct {
 }
 
 func (self *manager) Start() error {
-	if communication.MesosMasterReachable(self.master) == false {
+	retryCounter := 10
+
+	for ; retryCounter > 0; retryCounter-- {
+		if communication.MesosMasterReachable(self.master) { break }
+		time.Sleep(6 * time.Second)
+	}
+
+	if retryCounter == 0 {
 		return errors.New("Mesos unreachable")
 	}
 
@@ -322,7 +329,9 @@ func (self *manager) handleRunDockerImageImpl(task *managerInterface.Task) {
 		Shell: proto.Bool(false),
 	}
 	if len(task.Arguments) > 0 {
-		commandInfo.Arguments = task.Arguments
+		for _, argument := range task.Arguments {
+			commandInfo.Arguments = append(commandInfo.Arguments, argument)
+		}
 	}
 	resources := [] *mesosproto.Resource {
 		&mesosproto.Resource{
