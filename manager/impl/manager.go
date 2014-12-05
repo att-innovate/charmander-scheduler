@@ -76,11 +76,11 @@ type manager struct {
 }
 
 func (self *manager) Start() error {
-	retryCounter := 10
+	retryCounter := 6
 
 	for ; retryCounter > 0; retryCounter-- {
 		if communication.MesosMasterReachable(self.master) { break }
-		time.Sleep(6 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 
 	if retryCounter == 0 {
