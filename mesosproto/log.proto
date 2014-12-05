@@ -20,7 +20,6 @@ package mesosproto;
 
 import "code.google.com/p/gogoprotobuf/gogoproto/gogo.proto";
 
-
 // Represents a "promise" that a replica has made. A promise is
 // *implicitly* valid for _all_ future actions that get performed on
 // the replicated log (provided the action comes from the same

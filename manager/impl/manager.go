@@ -279,7 +279,6 @@ func (self *manager) HandleRunDockerImage(task *managerInterface.Task) {
 func (self *manager) handleRunDockerImageImpl(task *managerInterface.Task) {
 	id := fmt.Sprintf("%v-%v", strings.Replace(task.ID, " ", "", -1), time.Now().UnixNano())
 	memory := float64(task.Mem)
-	arguments := []string {task.Arguments}
 	portResources := []*mesosproto.Value_Range{}
 	cpus := float64(0.1)
 	if task.Cpus > 0 {
@@ -319,13 +318,12 @@ func (self *manager) handleRunDockerImageImpl(task *managerInterface.Task) {
 		dockerInfo.Network= mesosproto.ContainerInfo_DockerInfo_BRIDGE.Enum()
 	}
 
-	commandInfo := &mesosproto.CommandInfo {
+	commandInfo := &mesosproto.CommandInfo{
 		Shell: proto.Bool(false),
 	}
-	if len(arguments) > 0 {
-		commandInfo.Arguments = arguments
+	if len(task.Arguments) > 0 {
+		commandInfo.Arguments = task.Arguments
 	}
-
 	resources := [] *mesosproto.Resource {
 		&mesosproto.Resource{
 			Name: proto.String("mem"),

@@ -60,15 +60,21 @@ func (x *StatusUpdateRecord_Type) UnmarshalJSON(data []byte) error {
 // looking from the master level. Currently only the slave knows which run the
 // task belongs to.
 type Task struct {
-	Name             *string       `protobuf:"bytes,1,req,name=name" json:"name,omitempty"`
-	TaskId           *TaskID       `protobuf:"bytes,2,req,name=task_id" json:"task_id,omitempty"`
-	FrameworkId      *FrameworkID  `protobuf:"bytes,3,req,name=framework_id" json:"framework_id,omitempty"`
-	ExecutorId       *ExecutorID   `protobuf:"bytes,4,opt,name=executor_id" json:"executor_id,omitempty"`
-	SlaveId          *SlaveID      `protobuf:"bytes,5,req,name=slave_id" json:"slave_id,omitempty"`
-	State            *TaskState    `protobuf:"varint,6,req,name=state,enum=mesosproto.TaskState" json:"state,omitempty"`
-	Resources        []*Resource   `protobuf:"bytes,7,rep,name=resources" json:"resources,omitempty"`
-	Statuses         []*TaskStatus `protobuf:"bytes,8,rep,name=statuses" json:"statuses,omitempty"`
-	XXX_unrecognized []byte        `json:"-"`
+	Name        *string       `protobuf:"bytes,1,req,name=name" json:"name,omitempty"`
+	TaskId      *TaskID       `protobuf:"bytes,2,req,name=task_id" json:"task_id,omitempty"`
+	FrameworkId *FrameworkID  `protobuf:"bytes,3,req,name=framework_id" json:"framework_id,omitempty"`
+	ExecutorId  *ExecutorID   `protobuf:"bytes,4,opt,name=executor_id" json:"executor_id,omitempty"`
+	SlaveId     *SlaveID      `protobuf:"bytes,5,req,name=slave_id" json:"slave_id,omitempty"`
+	State       *TaskState    `protobuf:"varint,6,req,name=state,enum=mesosproto.TaskState" json:"state,omitempty"`
+	Resources   []*Resource   `protobuf:"bytes,7,rep,name=resources" json:"resources,omitempty"`
+	Statuses    []*TaskStatus `protobuf:"bytes,8,rep,name=statuses" json:"statuses,omitempty"`
+	// These fields correspond to the state and uuid of the latest
+	// status update forwarded to the master.
+	// NOTE: Either both the fields must be set or both must be unset.
+	StatusUpdateState *TaskState `protobuf:"varint,9,opt,name=status_update_state,enum=mesosproto.TaskState" json:"status_update_state,omitempty"`
+	StatusUpdateUuid  []byte     `protobuf:"bytes,10,opt,name=status_update_uuid" json:"status_update_uuid,omitempty"`
+	Labels            *Labels    `protobuf:"bytes,11,opt,name=labels" json:"labels,omitempty"`
+	XXX_unrecognized  []byte     `json:"-"`
 }
 
 func (m *Task) Reset()         { *m = Task{} }
@@ -131,6 +137,27 @@ func (m *Task) GetStatuses() []*TaskStatus {
 	return nil
 }
 
+func (m *Task) GetStatusUpdateState() TaskState {
+	if m != nil && m.StatusUpdateState != nil {
+		return *m.StatusUpdateState
+	}
+	return TaskState_TASK_STAGING
+}
+
+func (m *Task) GetStatusUpdateUuid() []byte {
+	if m != nil {
+		return m.StatusUpdateUuid
+	}
+	return nil
+}
+
+func (m *Task) GetLabels() *Labels {
+	if m != nil {
+		return m.Labels
+	}
+	return nil
+}
+
 // Describes a role, which are used to group frameworks for allocation
 // decisions, depending on the allocation policy being used.
 // The weight field can be used to indicate forms of priority.
@@ -160,14 +187,21 @@ func (m *RoleInfo) GetWeight() float64 {
 	return Default_RoleInfo_Weight
 }
 
+// TODO(vinod): Create a new UUID message type.
 type StatusUpdate struct {
-	FrameworkId      *FrameworkID `protobuf:"bytes,1,req,name=framework_id" json:"framework_id,omitempty"`
-	ExecutorId       *ExecutorID  `protobuf:"bytes,2,opt,name=executor_id" json:"executor_id,omitempty"`
-	SlaveId          *SlaveID     `protobuf:"bytes,3,opt,name=slave_id" json:"slave_id,omitempty"`
-	Status           *TaskStatus  `protobuf:"bytes,4,req,name=status" json:"status,omitempty"`
-	Timestamp        *float64     `protobuf:"fixed64,5,req,name=timestamp" json:"timestamp,omitempty"`
-	Uuid             []byte       `protobuf:"bytes,6,req,name=uuid" json:"uuid,omitempty"`
-	XXX_unrecognized []byte       `json:"-"`
+	FrameworkId *FrameworkID `protobuf:"bytes,1,req,name=framework_id" json:"framework_id,omitempty"`
+	ExecutorId  *ExecutorID  `protobuf:"bytes,2,opt,name=executor_id" json:"executor_id,omitempty"`
+	SlaveId     *SlaveID     `protobuf:"bytes,3,opt,name=slave_id" json:"slave_id,omitempty"`
+	Status      *TaskStatus  `protobuf:"bytes,4,req,name=status" json:"status,omitempty"`
+	Timestamp   *float64     `protobuf:"fixed64,5,req,name=timestamp" json:"timestamp,omitempty"`
+	Uuid        []byte       `protobuf:"bytes,6,req,name=uuid" json:"uuid,omitempty"`
+	// This corresponds to the latest state of the task according to the
+	// slave. Note that this state might be different than the state in
+	// 'status' because status update manager queues updates. In other
+	// words, 'status' corresponds to the update at top of the queue and
+	// 'latest_state' corresponds to the update at bottom of the queue.
+	LatestState      *TaskState `protobuf:"varint,7,opt,name=latest_state,enum=mesosproto.TaskState" json:"latest_state,omitempty"`
+	XXX_unrecognized []byte     `json:"-"`
 }
 
 func (m *StatusUpdate) Reset()         { *m = StatusUpdate{} }
@@ -214,6 +248,13 @@ func (m *StatusUpdate) GetUuid() []byte {
 		return m.Uuid
 	}
 	return nil
+}
+
+func (m *StatusUpdate) GetLatestState() TaskState {
+	if m != nil && m.LatestState != nil {
+		return *m.LatestState
+	}
+	return TaskState_TASK_STAGING
 }
 
 // This message encapsulates how we checkpoint a status update to disk.
@@ -1263,7 +1304,7 @@ func (m *AuthenticationMechanismsMessage) GetMechanisms() []string {
 
 type AuthenticationStartMessage struct {
 	Mechanism        *string `protobuf:"bytes,1,req,name=mechanism" json:"mechanism,omitempty"`
-	Data             *string `protobuf:"bytes,2,opt,name=data" json:"data,omitempty"`
+	Data             []byte  `protobuf:"bytes,2,opt,name=data" json:"data,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -1278,11 +1319,11 @@ func (m *AuthenticationStartMessage) GetMechanism() string {
 	return ""
 }
 
-func (m *AuthenticationStartMessage) GetData() string {
-	if m != nil && m.Data != nil {
-		return *m.Data
+func (m *AuthenticationStartMessage) GetData() []byte {
+	if m != nil {
+		return m.Data
 	}
-	return ""
+	return nil
 }
 
 type AuthenticationStepMessage struct {
@@ -1452,25 +1493,64 @@ func (m *Modules) GetLibraries() []*Modules_Library {
 }
 
 type Modules_Library struct {
-	Path             *string  `protobuf:"bytes,1,opt,name=path" json:"path,omitempty"`
-	Modules          []string `protobuf:"bytes,2,rep,name=modules" json:"modules,omitempty"`
-	XXX_unrecognized []byte   `json:"-"`
+	// If "file" contains a slash ("/"), then it is interpreted as a
+	// (relative or absolute) pathname.  Otherwise a standard library
+	// search is performed.
+	File *string `protobuf:"bytes,1,opt,name=file" json:"file,omitempty"`
+	// We will add the proper prefix ("lib") and suffix (".so" for
+	// Linux and ".dylib" for OS X) to the "name".
+	Name             *string                   `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
+	Modules          []*Modules_Library_Module `protobuf:"bytes,3,rep,name=modules" json:"modules,omitempty"`
+	XXX_unrecognized []byte                    `json:"-"`
 }
 
 func (m *Modules_Library) Reset()         { *m = Modules_Library{} }
 func (m *Modules_Library) String() string { return proto.CompactTextString(m) }
 func (*Modules_Library) ProtoMessage()    {}
 
-func (m *Modules_Library) GetPath() string {
-	if m != nil && m.Path != nil {
-		return *m.Path
+func (m *Modules_Library) GetFile() string {
+	if m != nil && m.File != nil {
+		return *m.File
 	}
 	return ""
 }
 
-func (m *Modules_Library) GetModules() []string {
+func (m *Modules_Library) GetName() string {
+	if m != nil && m.Name != nil {
+		return *m.Name
+	}
+	return ""
+}
+
+func (m *Modules_Library) GetModules() []*Modules_Library_Module {
 	if m != nil {
 		return m.Modules
+	}
+	return nil
+}
+
+type Modules_Library_Module struct {
+	// Module name.
+	Name *string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	// Module-specific parameters.
+	Parameters       []*Parameter `protobuf:"bytes,2,rep,name=parameters" json:"parameters,omitempty"`
+	XXX_unrecognized []byte       `json:"-"`
+}
+
+func (m *Modules_Library_Module) Reset()         { *m = Modules_Library_Module{} }
+func (m *Modules_Library_Module) String() string { return proto.CompactTextString(m) }
+func (*Modules_Library_Module) ProtoMessage()    {}
+
+func (m *Modules_Library_Module) GetName() string {
+	if m != nil && m.Name != nil {
+		return *m.Name
+	}
+	return ""
+}
+
+func (m *Modules_Library_Module) GetParameters() []*Parameter {
+	if m != nil {
+		return m.Parameters
 	}
 	return nil
 }

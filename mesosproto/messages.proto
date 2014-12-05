@@ -21,7 +21,6 @@ package mesosproto;
 import "mesos.proto";
 import "code.google.com/p/gogoprotobuf/gogoproto/gogo.proto";
 
-
 // TODO(benh): Provide comments for each of these messages. Also,
 // consider splitting these messages into different "packages" which
 // represent which messages get handled by which components (e.g., the
@@ -46,10 +45,19 @@ message Task {
   required FrameworkID framework_id = 3;
   optional ExecutorID executor_id = 4;
   required SlaveID slave_id = 5;
-  required TaskState state = 6;
+  required TaskState state = 6; // Latest state of the task.
   repeated Resource resources = 7;
   repeated TaskStatus statuses = 8;
+
+  // These fields correspond to the state and uuid of the latest
+  // status update forwarded to the master.
+  // NOTE: Either both the fields must be set or both must be unset.
+  optional TaskState status_update_state = 9;
+  optional bytes status_update_uuid = 10;
+
+  optional Labels labels = 11;
 }
+
 
 // Describes a role, which are used to group frameworks for allocation
 // decisions, depending on the allocation policy being used.
@@ -60,6 +68,7 @@ message RoleInfo {
 }
 
 
+// TODO(vinod): Create a new UUID message type.
 message StatusUpdate {
   required FrameworkID framework_id = 1;
   optional ExecutorID executor_id = 2;
@@ -67,6 +76,13 @@ message StatusUpdate {
   required TaskStatus status = 4;
   required double timestamp = 5;
   required bytes uuid = 6;
+
+  // This corresponds to the latest state of the task according to the
+  // slave. Note that this state might be different than the state in
+  // 'status' because status update manager queues updates. In other
+  // words, 'status' corresponds to the update at top of the queue and
+  // 'latest_state' corresponds to the update at bottom of the queue.
+  optional TaskState latest_state = 7;
 }
 
 
@@ -359,7 +375,7 @@ message AuthenticationMechanismsMessage {
 
 message AuthenticationStartMessage {
   required string mechanism = 1;
-  optional string data = 2;
+  optional bytes data = 2;
 }
 
 
@@ -415,13 +431,24 @@ message TaskHealthStatus {
 // Collection of Modules.
 message Modules {
   message Library {
-    // TODO(karya): Add a "name" field that allows specifying library
-    // name instead of an absolute path.
-    //optional string name = 1;
+    // If "file" contains a slash ("/"), then it is interpreted as a
+    // (relative or absolute) pathname.  Otherwise a standard library
+    // search is performed.
+    optional string file = 1;
 
-    optional string path = 1;
+    // We will add the proper prefix ("lib") and suffix (".so" for
+    // Linux and ".dylib" for OS X) to the "name".
+    optional string name = 2;
 
-    repeated string modules = 2;
+    message Module {
+      // Module name.
+      optional string name = 1;
+
+      // Module-specific parameters.
+      repeated Parameter parameters = 2;
+    }
+
+    repeated Module modules = 3;
   }
 
   repeated Library libraries = 1;

@@ -19,15 +19,18 @@ type Operation_Type int32
 
 const (
 	Operation_SNAPSHOT Operation_Type = 1
+	Operation_DIFF     Operation_Type = 3
 	Operation_EXPUNGE  Operation_Type = 2
 )
 
 var Operation_Type_name = map[int32]string{
 	1: "SNAPSHOT",
+	3: "DIFF",
 	2: "EXPUNGE",
 }
 var Operation_Type_value = map[string]int32{
 	"SNAPSHOT": 1,
+	"DIFF":     3,
 	"EXPUNGE":  2,
 }
 
@@ -85,6 +88,7 @@ func (m *Entry) GetValue() []byte {
 type Operation struct {
 	Type             *Operation_Type     `protobuf:"varint,1,req,name=type,enum=mesosproto.Operation_Type" json:"type,omitempty"`
 	Snapshot         *Operation_Snapshot `protobuf:"bytes,2,opt,name=snapshot" json:"snapshot,omitempty"`
+	Diff             *Operation_Diff     `protobuf:"bytes,4,opt,name=diff" json:"diff,omitempty"`
 	Expunge          *Operation_Expunge  `protobuf:"bytes,3,opt,name=expunge" json:"expunge,omitempty"`
 	XXX_unrecognized []byte              `json:"-"`
 }
@@ -107,6 +111,13 @@ func (m *Operation) GetSnapshot() *Operation_Snapshot {
 	return nil
 }
 
+func (m *Operation) GetDiff() *Operation_Diff {
+	if m != nil {
+		return m.Diff
+	}
+	return nil
+}
+
 func (m *Operation) GetExpunge() *Operation_Expunge {
 	if m != nil {
 		return m.Expunge
@@ -125,6 +136,25 @@ func (m *Operation_Snapshot) String() string { return proto.CompactTextString(m)
 func (*Operation_Snapshot) ProtoMessage()    {}
 
 func (m *Operation_Snapshot) GetEntry() *Entry {
+	if m != nil {
+		return m.Entry
+	}
+	return nil
+}
+
+// Describes a "diff" operation where the 'value' of the entry is
+// just the diff itself, but the 'uuid' represents the UUID of the
+// entry after applying this diff.
+type Operation_Diff struct {
+	Entry            *Entry `protobuf:"bytes,1,req,name=entry" json:"entry,omitempty"`
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *Operation_Diff) Reset()         { *m = Operation_Diff{} }
+func (m *Operation_Diff) String() string { return proto.CompactTextString(m) }
+func (*Operation_Diff) ProtoMessage()    {}
+
+func (m *Operation_Diff) GetEntry() *Entry {
 	if m != nil {
 		return m.Entry
 	}
