@@ -35,7 +35,7 @@ import (
 )
 
 func MesosMasterReachable(masterAddress string) bool {
-	_, err := http.Get("http://" + masterAddress)
+	_, err := http.Get("http://" + masterAddress + "/health")
 	if err != nil {
 		glog.Errorf("Failed to connect to mesos %v Error: %v\n", masterAddress, err)
 		return false
