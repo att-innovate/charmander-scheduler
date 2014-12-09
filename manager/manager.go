@@ -33,7 +33,10 @@ type Manager interface {
 	GetListenerPortForScheduler() int
 	GetListenerPortForRESTApi() int
 
+	GetRedisConnectionIPAndPort() string
+
 	GetTaskRequests() []*Task
+	GetNodes() []*Node
 
 	ResourceRequirementsWouldMatch(offer *mesosproto.Offer, taskRequest *Task) bool
 

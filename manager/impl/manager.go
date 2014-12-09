@@ -33,6 +33,7 @@ import (
 	"github.com/golang/glog"
 
 	"github.com/att-innovate/charmander-scheduler/communication"
+	"github.com/att-innovate/charmander-scheduler/communication/redis"
 	"github.com/att-innovate/charmander-scheduler/mesosproto"
 	"github.com/att-innovate/charmander-scheduler/scheduler"
 	"github.com/att-innovate/charmander-scheduler/upid"
@@ -48,7 +49,8 @@ func New(
 	scheduler *scheduler.Scheduler,
 	frameworkName string,
 	master string,
-	listening string) (manager, error) {
+	listening string,
+	redis string) (manager, error) {
 
 	framework := &mesosproto.FrameworkInfo{
 		User: proto.String(""),
@@ -60,6 +62,7 @@ func New(
 		frameworkInfo: framework,
 		master:        master,
 		listening:     listening,
+		redis:         redis,
 	}
 
 	return newManager, nil
@@ -73,6 +76,7 @@ type manager struct {
 	frameworkId   string
 	master        string
 	listening     string
+	redis         string
 }
 
 func (self *manager) Start() error {
@@ -110,6 +114,7 @@ func (self *manager) Start() error {
 		Port: fmt.Sprintf("%d", self.GetListenerPortForScheduler())}
 
 	communication.InitRestHandler(self)
+	redis.InitRedisUpdater(self)
 
 	self.announceFramework()
 
@@ -128,8 +133,16 @@ func (self *manager) GetListenerPortForRESTApi() int {
 	return 7075
 }
 
+func (self *manager) GetRedisConnectionIPAndPort() string {
+	return self.redis
+}
+
 func (self *manager) GetTaskRequests() []*managerInterface.Task {
 	return taskRegistry.Tasks()
+}
+
+func (self *manager) GetNodes() []*managerInterface.Node {
+	return nodeRegistry.Nodes()
 }
 
 func (self *manager) ResourceRequirementsWouldMatch(offer *mesosproto.Offer, taskRequest *managerInterface.Task) bool {

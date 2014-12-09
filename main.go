@@ -32,8 +32,9 @@ import (
 )
 
 // cmdline arguments
-var masterAddress = flag.String("master", "127.0.0.1:5050", "Address for Mesos Master")
-var myIP          = flag.String("local-ip", "127.0.0.1", "Local IP Address")
+var masterAddress  = flag.String("master", "127.0.0.1:5050", "Address for Mesos Master")
+var myIP           = flag.String("local-ip", "127.0.0.1", "Local IP Address")
+var redisIPAndPort = flag.String("redis", "127.0.0.1:6379", "Local IP Address")
 
 
 func main() {
@@ -41,7 +42,7 @@ func main() {
 
 	glog.Infoln("Starting charmander-scheduler.")
 
-	myManager, err := managerImpl.New(schedulerImpl.Scheduler, "Charmander Scheduler", *masterAddress, *myIP)
+	myManager, err := managerImpl.New(schedulerImpl.Scheduler, "Charmander Scheduler", *masterAddress, *myIP, *redisIPAndPort)
 	if err != nil {
 		glog.Errorln("Unable to create a Manager ", err.Error())
 		return
