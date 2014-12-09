@@ -36,12 +36,12 @@ func InitRedisUpdater(manager manager.Manager) {
 
 func updateRedis(manager manager.Manager) {
 	for {
-		glog.Infoln("update")
+		glog.Infoln("update redis")
 		if connection := redisAvailable(manager); connection != nil {
 			for _, node := range manager.GetNodes() {
 				nodeInJSON, _ := json.Marshal(&node)
 				sendCommand(connection, "SET", "charmander:nodes:"+node.Hostname, fmt.Sprintf("%s", nodeInJSON))
-				sendCommand(connection, "EXPIRE", "charmander:nodes:"+node.Hostname, "30")
+				sendCommand(connection, "EXPIRE", "charmander:nodes:"+node.Hostname, "30") //timeout after 30s
 			}
 			connection.Close()
 		}
