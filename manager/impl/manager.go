@@ -247,6 +247,7 @@ func resolveNodeName(offer mesosproto.Offer) string {
 
 func removeOfferFromList(offers []*mesosproto.Offer, offer *mesosproto.Offer) []*mesosproto.Offer {
 	numberOfOffers := len(offers)
+	if numberOfOffers == 0 { return []*mesosproto.Offer {}}
 	if numberOfOffers == 1 { return []*mesosproto.Offer {}}
 
 	result := make([]*mesosproto.Offer, numberOfOffers-1)
