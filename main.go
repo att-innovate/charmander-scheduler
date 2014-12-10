@@ -34,7 +34,7 @@ import (
 // cmdline arguments
 var masterAddress  = flag.String("master", "127.0.0.1:5050", "Address for Mesos Master")
 var myIP           = flag.String("local-ip", "127.0.0.1", "Local IP Address")
-var redisIPAndPort = flag.String("redis", "127.0.0.1:6379", "Local IP Address")
+var redisIPAndPort = flag.String("redis", "127.0.0.1:6379", "Redis IP Address:Port")
 
 
 func main() {
