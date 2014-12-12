@@ -40,6 +40,7 @@ type Task struct {
 	Sla         string    `json:"sla"`
 	NodeType    string    `json:"nodetype"`
 	NodeName    string    `json:"nodename"`
+	NotMetered  bool      `json:"notmetered"`
 	Arguments   []string  `json:"arguments,omitempty"`
 	Volumes     []*Volume `json:"volumes,omitempty"`
 	Ports       []*Port   `json:"ports,omitempty"`
