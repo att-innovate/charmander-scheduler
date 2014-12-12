@@ -1,6 +1,9 @@
 {
 	"ImportPath": "github.com/att-innovate/charmander-scheduler",
 	"GoVersion": "go1.3.3",
+	"Packages": [
+		"github.com/att-innovate/charmander-scheduler"
+	],
 	"Deps": [
 		{
 			"ImportPath": "code.google.com/p/gogoprotobuf/proto",
