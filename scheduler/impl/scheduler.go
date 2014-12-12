@@ -44,7 +44,7 @@ func init() {
 
 	Scheduler.ResourceOffers = func(manager managerInterface.Manager, offers []*mesosproto.Offer) {
 		var taskRequests []*managerInterface.Task
-		taskRequests = manager.GetTaskRequests()
+		taskRequests = manager.GetOpenTaskRequests()
 
 		glog.Infoln("Got ", len(offers), "offer(s) from master.")
 

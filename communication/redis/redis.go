@@ -40,8 +40,22 @@ func updateRedis(manager manager.Manager) {
 		if connection := redisAvailable(manager); connection != nil {
 			for _, node := range manager.GetNodes() {
 				nodeInJSON, _ := json.Marshal(&node)
-				sendCommand(connection, "SET", "charmander:nodes:"+node.Hostname, fmt.Sprintf("%s", nodeInJSON))
-				sendCommand(connection, "EXPIRE", "charmander:nodes:"+node.Hostname, "30") //timeout after 30s
+				key := "charmander:nodes:"+node.Hostname
+				sendCommand(connection, "SET", key, fmt.Sprintf("%s", nodeInJSON))
+				sendCommand(connection, "EXPIRE", key, "30") //timeout after 30s
+			}
+			for _, task := range manager.GetTasks() {
+				taskInJSON, _ := json.Marshal(&task)
+				key := "charmander:tasks:"+task.InternalID
+				sendCommand(connection, "SET", key, fmt.Sprintf("%s", taskInJSON))
+				sendCommand(connection, "EXPIRE", key, "30") //timeout after 30s
+			}
+			for _, task := range manager.GetTasks() {
+				if task.NotMetered { continue }
+				taskInJSON, _ := json.Marshal(&task)
+				key := "charmander:tasks-metered:"+task.InternalID
+				sendCommand(connection, "SET", key, fmt.Sprintf("%s", taskInJSON))
+				sendCommand(connection, "EXPIRE", key, "30") //timeout after 30s
 			}
 			connection.Close()
 		}
@@ -78,5 +92,3 @@ func encodeReq(buf []byte, args []string) []byte {
 	}
 	return buf
 }
-
-

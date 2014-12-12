@@ -137,12 +137,16 @@ func (self *manager) GetRedisConnectionIPAndPort() string {
 	return self.redis
 }
 
-func (self *manager) GetTaskRequests() []*managerInterface.Task {
+func (self *manager) GetTasks() []*managerInterface.Task {
 	return taskRegistry.Tasks()
 }
 
 func (self *manager) GetNodes() []*managerInterface.Node {
 	return nodeRegistry.Nodes()
+}
+
+func (self *manager) GetOpenTaskRequests() []*managerInterface.Task {
+	return taskRegistry.OpenTaskRequests()
 }
 
 func (self *manager) ResourceRequirementsWouldMatch(offer *mesosproto.Offer, taskRequest *managerInterface.Task) bool {
@@ -214,7 +218,7 @@ func (self *manager) updateNodeRegistry(offers []*mesosproto.Offer) {
 func (self *manager) enforceSLAs(offers []*mesosproto.Offer) []*mesosproto.Offer {
 	result := offers
 	var taskRequests []*managerInterface.Task
-	taskRequests = self.GetTaskRequests()
+	taskRequests = self.GetOpenTaskRequests()
 
 	for _, taskRequest := range taskRequests {
 		if taskRequest.Running { continue }
@@ -275,7 +279,9 @@ func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateM
 		taskRegistry.Delete(status.GetTaskId().GetValue())
 		glog.Infoln("Task Failed: ", status.GetTaskId().GetValue())
 	case  *status.State == mesosproto.TaskState_TASK_LOST:
-		taskRegistry.Delete(status.GetTaskId().GetValue())
+		if strings.Contains(status.GetMessage(), "Task has duplicate ID") == false {
+			taskRegistry.Delete(status.GetTaskId().GetValue())
+		}
 		glog.Infoln("Task Lost: ", status.GetTaskId().GetValue())
 	case  *status.State == mesosproto.TaskState_TASK_FINISHED:
 		taskRegistry.Delete(status.GetTaskId().GetValue())

@@ -82,9 +82,23 @@ func (taskRegistry *TaskRegistry) Tasks() ([]*managerInterface.Task) {
 	i :=  0
 	result := make([]*managerInterface.Task, len(taskRegistry.tasks))
 
-	for _, value := range taskRegistry.tasks {
-		result[i] = value
+	for _, task := range taskRegistry.tasks {
+		result[i] = task
 		i++
+	}
+
+	return result
+}
+
+func (taskRegistry *TaskRegistry) OpenTaskRequests() ([]*managerInterface.Task) {
+	taskRegistry.RLock()
+	defer taskRegistry.RUnlock()
+
+	result := make([]*managerInterface.Task, 0)
+
+	for _, task := range taskRegistry.tasks {
+		if task.RequestSent { continue }
+		result = append(result, task)
 	}
 
 	return result

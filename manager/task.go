@@ -47,6 +47,7 @@ type Task struct {
 
 	InternalID  string
 	SlaveID     string
+	ContainerID string
 	CreatedAt   int64
 	TaskInfo   *mesosproto.TaskInfo
 	RequestSent bool

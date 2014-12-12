@@ -35,9 +35,10 @@ type Manager interface {
 
 	GetRedisConnectionIPAndPort() string
 
-	GetTaskRequests() []*Task
+	GetTasks() []*Task
 	GetNodes() []*Node
 
+	GetOpenTaskRequests() []*Task
 	ResourceRequirementsWouldMatch(offer *mesosproto.Offer, taskRequest *Task) bool
 
 	HandleFrameworkRegistered(frameworkId string)
