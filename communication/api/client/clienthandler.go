@@ -55,7 +55,7 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 
 		self.Manager.HandleRunDockerImage(task)
 
-		fmt.Fprintf(responseWriter, "done\n")
+		fmt.Fprintf(responseWriter, "\n-- done\n")
 		return
 	}
 }
