@@ -254,12 +254,10 @@ func removeOfferFromList(offers []*mesosproto.Offer, offer *mesosproto.Offer) []
 	if numberOfOffers == 0 { return []*mesosproto.Offer {}}
 	if numberOfOffers == 1 { return []*mesosproto.Offer {}}
 
-	result := make([]*mesosproto.Offer, numberOfOffers-1)
-	i :=  0
+	result := make([]*mesosproto.Offer, 0)
 	for _, value := range offers {
 		if offer.GetId().GetValue() == value.GetId().GetValue() { continue }
-		result[i] = value
-		i++
+		result = append(result, value)
 	}
 
 	return result
