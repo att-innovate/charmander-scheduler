@@ -279,8 +279,14 @@ func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateM
 		taskRegistry.Delete(status.GetTaskId().GetValue())
 		glog.Infoln("Task Failed: ", status.GetTaskId().GetValue())
 	case  *status.State == mesosproto.TaskState_TASK_LOST:
-		if strings.Contains(status.GetMessage(), "Task has duplicate ID") == false && strings.Contains(status.GetMessage(), "used invalid offers") == false {
-//			taskRegistry.Delete(status.GetTaskId().GetValue())
+		switch {
+		case strings.Contains(status.GetMessage(), "Task has duplicate ID"):
+			// ignore
+		case strings.Contains(status.GetMessage(), "is no longer valid"):
+			task, _ := taskRegistry.Fetch(status.GetTaskId().GetValue())
+			task.RequestSent = false
+		default:
+			taskRegistry.Delete(status.GetTaskId().GetValue())
 		}
 		glog.Infoln("Task Lost: ", status.GetTaskId().GetValue())
 	case  *status.State == mesosproto.TaskState_TASK_FINISHED:
