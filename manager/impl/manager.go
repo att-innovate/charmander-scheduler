@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"time"
 	"strings"
+	"sync"
 
 	"code.google.com/p/gogoprotobuf/proto"
 	"github.com/golang/glog"
@@ -44,6 +45,8 @@ import (
 
 var taskRegistry = NewTaskRegistry()
 var nodeRegistry = NewNodeRegistry()
+
+var enforceSLAsMutex sync.Mutex
 
 func New(
 	scheduler *scheduler.Scheduler,
@@ -216,6 +219,9 @@ func (self *manager) updateNodeRegistry(offers []*mesosproto.Offer) {
 }
 
 func (self *manager) enforceSLAs(offers []*mesosproto.Offer) []*mesosproto.Offer {
+	enforceSLAsMutex.Lock()
+	defer enforceSLAsMutex.Unlock()
+
 	result := offers
 	var taskRequests []*managerInterface.Task
 	taskRequests = self.GetOpenTaskRequests()
