@@ -45,15 +45,15 @@ func updateRedis(manager manager.Manager) {
 				sendCommand(connection, "EXPIRE", key, "30") //timeout after 30s
 			}
 			for _, task := range manager.GetTasks() {
+				if task.NotMetered { continue }
 				taskInJSON, _ := json.Marshal(&task)
-				key := "charmander:tasks:"+task.InternalID
+				key := "charmander:tasks-metered:"+task.InternalID
 				sendCommand(connection, "SET", key, fmt.Sprintf("%s", taskInJSON))
 				sendCommand(connection, "EXPIRE", key, "30") //timeout after 30s
 			}
 			for _, task := range manager.GetTasks() {
-				if task.NotMetered { continue }
 				taskInJSON, _ := json.Marshal(&task)
-				key := "charmander:tasks-metered:"+task.InternalID
+				key := "charmander:tasks:"+task.InternalID
 				sendCommand(connection, "SET", key, fmt.Sprintf("%s", taskInJSON))
 				sendCommand(connection, "EXPIRE", key, "30") //timeout after 30s
 			}
