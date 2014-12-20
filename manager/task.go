@@ -35,7 +35,7 @@ const (
 type Task struct {
 	ID          string    `json:"id"`
 	DockerImage string    `json:"dockerimage"`
-	Mem         uint32    `json:"mem,string"`
+	Mem         uint64    `json:"mem,string"`
 	Cpus        float64   `json:"cpus,string"`
 	Sla         string    `json:"sla"`
 	NodeType    string    `json:"nodetype"`

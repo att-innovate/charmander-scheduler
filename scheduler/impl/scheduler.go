@@ -23,6 +23,8 @@
 package impl
 
 import (
+	"strconv"
+
 	"github.com/golang/glog"
 
 	"github.com/att-innovate/charmander-scheduler/scheduler"
@@ -42,6 +44,14 @@ func init() {
 		glog.Infoln("Registered FrameworkId ", frameworkId)
 	}
 
+	Scheduler.OverwriteTaskAttributes = func(manager managerInterface.Manager, taskRequest *managerInterface.Task) {
+		memObserved := manager.GetTaskIntelligence(taskRequest.ID, "mem")
+		if len(memObserved) > 0 {
+			mem, _ := strconv.Atoi(memObserved)
+			taskRequest.Mem = uint64((mem / 1000000)+(mem / 5000000))
+		}
+	}
+
 	Scheduler.ResourceOffers = func(manager managerInterface.Manager, offers []*mesosproto.Offer) {
 		var taskRequests []*managerInterface.Task
 		taskRequests = manager.GetOpenTaskRequests()
@@ -49,8 +59,6 @@ func init() {
 		glog.Infoln("Got ", len(offers), "offer(s) from master.")
 
 		for _, offer := range offers {
-			glog.Infoln("Offer: ", offer)
-
 			matchFound := false
 
 			for _, taskRequest := range taskRequests {

@@ -41,6 +41,9 @@ type Manager interface {
 	GetOpenTaskRequests() []*Task
 	ResourceRequirementsWouldMatch(offer *mesosproto.Offer, taskRequest *Task) bool
 
+	SetTaskIntelligence(taskname string, attribute string, value string)
+	GetTaskIntelligence(taskname string, attribute string) string
+
 	HandleFrameworkRegistered(frameworkId string)
 	HandleResourceOffered(offers []*mesosproto.Offer)
 	HandleStatusMessage(statusMessage *mesosproto.StatusUpdateMessage)

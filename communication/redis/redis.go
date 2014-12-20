@@ -20,10 +20,12 @@ package redis
 
 import (
 	"time"
+	"bufio"
 	"strconv"
 	"net"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/golang/glog"
 
@@ -57,11 +59,32 @@ func updateRedis(manager manager.Manager) {
 				sendCommand(connection, "SET", key, fmt.Sprintf("%s", taskInJSON))
 				sendCommand(connection, "EXPIRE", key, "30") //timeout after 30s
 			}
+			for key, value := range *getTaskIntelligence(manager) {
+				parts := strings.Split(key, ":")
+				manager.SetTaskIntelligence(parts[0], parts[1], value)
+			}
 			connection.Close()
 		}
 
 		time.Sleep(15 * time.Second)
 	}
+}
+
+func getTaskIntelligence(manager manager.Manager) (*map[string]string) {
+	result := map[string]string{}
+
+	if redis := redisAvailable(manager); redis != nil {
+		sendCommand(redis, "KEYS", "charmander:task-intelligence:*")
+		keys := *parseResultList(redis, "")
+		for _, key := range keys {
+			sendCommand(redis, "GET", key)
+			value := parseResult(redis, "")
+			result[key[len("charmander:task-intelligence:"):]] = value
+		}
+		redis.Close()
+	}
+
+	return &result
 }
 
 func redisAvailable(manager manager.Manager) net.Conn {
@@ -77,6 +100,35 @@ func sendCommand(connection net.Conn, args ...string) {
 	buffer := make([]byte, 0, 0)
 	buffer = encodeReq(buffer, args)
 	connection.Write(buffer)
+}
+
+func parseResultList(connection net.Conn, prefix string) *[]string {
+	bufferedInput := bufio.NewReader(connection)
+	line, _, err := bufferedInput.ReadLine()
+	if err != nil {
+		glog.Errorf("error parsing redis response %s\n", err)
+		return &[]string {}
+	}
+
+	numberOfArgs, _ := strconv.ParseInt(string(line[1:]), 10, 64)
+	args := make([]string, 0, numberOfArgs)
+	for i := int64(0); i < numberOfArgs; i++ {
+		line, _, _ = bufferedInput.ReadLine()
+		argLen, _ := strconv.ParseInt(string(line[1:]), 10, 32)
+		line, _, _ = bufferedInput.ReadLine()
+		args = append(args, string(line[len(prefix):argLen]))
+	}
+
+	return &args
+}
+
+func parseResult(connection net.Conn, prefix string) string {
+	bufferedInput := bufio.NewReader(connection)
+	line, _, _:= bufferedInput.ReadLine()
+	argLen, _ := strconv.ParseInt(string(line[1:]), 10, 32)
+	line, _, _ = bufferedInput.ReadLine()
+
+	return string(line[len(prefix):argLen])
 }
 
 func encodeReq(buf []byte, args []string) []byte {

@@ -45,6 +45,8 @@ import (
 var taskRegistry = NewTaskRegistry()
 var nodeRegistry = NewNodeRegistry()
 
+var taskIntelligence = make(map[string]string)
+
 func New(
 	scheduler *scheduler.Scheduler,
 	frameworkName string,
@@ -147,6 +149,18 @@ func (self *manager) GetNodes() []*managerInterface.Node {
 
 func (self *manager) GetOpenTaskRequests() []*managerInterface.Task {
 	return taskRegistry.OpenTaskRequests()
+}
+
+func (self *manager) SetTaskIntelligence(taskname string, attribute string, value string) {
+	taskIntelligence[formatTaskIntelligenceKey(taskname, attribute)] = value
+}
+
+func (self *manager) GetTaskIntelligence(taskname string, attribute string) string {
+	return taskIntelligence[formatTaskIntelligenceKey(taskname, attribute)]
+}
+
+func formatTaskIntelligenceKey(taskname string, attribute string) string {
+	return fmt.Sprintf("%s:%s", taskname, attribute)
 }
 
 func (self *manager) ResourceRequirementsWouldMatch(offer *mesosproto.Offer, taskRequest *managerInterface.Task) bool {
@@ -308,6 +322,10 @@ func (self *manager) HandleRunDockerImage(task *managerInterface.Task) {
 }
 
 func (self *manager) handleRunDockerImageImpl(task *managerInterface.Task) {
+	if self.scheduler != nil && self.scheduler.OverwriteTaskAttributes != nil {
+		self.scheduler.OverwriteTaskAttributes(self, task)
+	}
+
 	id := fmt.Sprintf("%v-%v", strings.Replace(task.ID, " ", "", -1), time.Now().UnixNano())
 	memory := float64(task.Mem)
 	portResources := []*mesosproto.Value_Range{}
