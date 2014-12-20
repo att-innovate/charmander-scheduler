@@ -55,7 +55,7 @@ func (self *MesosHandler) ServeHTTP(responseWriter http.ResponseWriter, request 
 		responseWriter.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	glog.Infof("Receiving message from %v, length %v\n", from, len(data))
+
 	responseWriter.WriteHeader(http.StatusAccepted)
 
 	messageName := extractNameFromRequestURI(request.RequestURI)
