@@ -24,6 +24,7 @@ package impl
 
 import (
 	"strconv"
+	"math"
 
 	"github.com/golang/glog"
 
@@ -45,10 +46,10 @@ func init() {
 	}
 
 	Scheduler.OverwriteTaskAttributes = func(manager managerInterface.Manager, taskRequest *managerInterface.Task) {
-		memObserved := manager.GetTaskIntelligence(taskRequest.ID, "mem")
-		if len(memObserved) > 0 {
-			mem, _ := strconv.Atoi(memObserved)
-			taskRequest.Mem = uint64((mem / 1000000)+(mem / 5000000))
+		memObservedRaw := manager.GetTaskIntelligence(taskRequest.ID, "mem")
+		if len(memObservedRaw) > 0 {
+			memObserved, _ := strconv.Atoi(memObservedRaw)
+			taskRequest.Mem = uint64((math.Ceil(float64(memObserved / 1000000) * 1.2))) // add 20% safety zone
 		}
 	}
 
