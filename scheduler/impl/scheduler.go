@@ -37,6 +37,10 @@ import (
 // my scheduler
 var Scheduler = &scheduler.Scheduler{}
 
+const (
+	OneMB = 1000000
+	TwoMB = 2000000
+)
 
 func init() {
 	glog.Infoln("Initializing scheduler ...")
@@ -49,7 +53,11 @@ func init() {
 		memObservedRaw := manager.GetTaskIntelligence(taskRequest.ID, "mem")
 		if len(memObservedRaw) > 0 {
 			memObserved, _ := strconv.Atoi(memObservedRaw)
-			taskRequest.Mem = uint64((math.Ceil(float64(memObserved / 1000000) * 1.2))) // add 20% safety zone
+			if memObserved < OneMB {
+				taskRequest.Mem = uint64(TwoMB)
+			} else {
+				taskRequest.Mem = uint64((math.Ceil(float64(memObserved / OneMB) * 1.2))) // add 20% safety zone
+			}
 		}
 	}
 
