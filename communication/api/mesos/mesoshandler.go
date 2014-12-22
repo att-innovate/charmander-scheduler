@@ -32,7 +32,6 @@ import (
 	"github.com/golang/glog"
 
 	"github.com/att-innovate/charmander-scheduler/manager"
-	"github.com/att-innovate/charmander-scheduler/upid"
 	"github.com/att-innovate/charmander-scheduler/mesosproto"
 )
 
@@ -41,7 +40,7 @@ type MesosHandler struct {
 }
 
 func (self *MesosHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	from, err := getLibprocessFrom(request)
+	err := verifyLibprocessRequest(request)
 	if err != nil {
 		glog.Errorf("Ignoring the request: %v\n", err)
 		responseWriter.WriteHeader(http.StatusBadRequest)
@@ -87,19 +86,19 @@ func (self *MesosHandler) ServeHTTP(responseWriter http.ResponseWriter, request 
 
 }
 
-func getLibprocessFrom(r *http.Request) (*upid.UPID, error) {
+func verifyLibprocessRequest(r *http.Request) error {
 	if r.Method != "POST" {
-		return nil, fmt.Errorf("Not a libprocess POST request")
+		return fmt.Errorf("Not a libprocess POST request")
 	}
 	ua, ok := r.Header["User-Agent"]
 	if ok && strings.HasPrefix(ua[0], "libprocess/") {
-		return upid.Parse(ua[0][len("libprocess/"):])
+		return nil
 	}
-	lf, ok := r.Header["Libprocess-From"]
+	_, ok = r.Header["Libprocess-From"]
 	if ok {
-		return upid.Parse(lf[0])
+		return nil
 	}
-	return nil, fmt.Errorf("Cannot find 'User-Agent' or 'Libprocess-From'")
+	return fmt.Errorf("Cannot find 'User-Agent' or 'Libprocess-From'")
 }
 
 func extractNameFromRequestURI(requestURI string) string {
