@@ -60,8 +60,18 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 
 	} else if strings.Contains(path, "/task/") && request.Method == "DELETE" {
 		pathElmts := strings.Split(path, "/")
+		foundATask := false
 		if len(pathElmts) == 4 && len(pathElmts[3]) > 0 {
-			fmt.Fprintf(responseWriter, "\n Delete task: %s \n", pathElmts[3])
+			tasks := self.Manager.GetTasks()
+			for _, task := range tasks {
+				if strings.HasPrefix(task.InternalID,  pathElmts[3]) {
+					fmt.Fprintf(responseWriter, "\n Delete task: %s \n", pathElmts[3])
+					self.Manager.HandleDeleteTask(task)
+					foundATask = true
+				}
+			}
+
+			if foundATask { return }
 		}
 	}
 

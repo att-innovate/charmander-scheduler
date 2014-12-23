@@ -304,6 +304,9 @@ func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateM
 	case  *status.State == mesosproto.TaskState_TASK_FINISHED:
 		taskRegistry.Delete(status.GetTaskId().GetValue())
 		glog.Infoln("Task Finished: ", status.GetTaskId().GetValue())
+	case  *status.State == mesosproto.TaskState_TASK_KILLED:
+		taskRegistry.Delete(status.GetTaskId().GetValue())
+		glog.Infoln("Task Killed: ", status.GetTaskId().GetValue())
 	}
 
 	self.acknowledgeStatusUpdate(statusMessage)
@@ -413,6 +416,20 @@ func (self *manager) handleRunDockerImageImpl(task *managerInterface.Task) {
 	glog.Infoln("Task: ", task)
 
 	taskRegistry.Register(id, task)
+
+}
+
+func (self *manager) HandleDeleteTask(task *managerInterface.Task) {
+	message := &mesosproto.KillTaskMessage{
+		FrameworkId: &mesosproto.FrameworkID{Value: &self.frameworkId},
+		TaskId: &mesosproto.TaskID{Value: &task.InternalID},
+	}
+
+	glog.Infof("Delete Task [%s] ", message)
+	messagePackage := communication.NewMessage(self.masterUPID, message, nil)
+	if err := communication.SendMessageToMesos(self.selfUPID, messagePackage); err != nil {
+		glog.Errorf("Failed to send KillTaskMessage message: %v\n", err)
+	}
 
 }
 
