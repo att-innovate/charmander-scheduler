@@ -49,6 +49,7 @@ type Manager interface {
 	HandleStatusMessage(statusMessage *mesosproto.StatusUpdateMessage)
 	HandleRunDockerImage(task *Task)
 	HandleDeleteTask(task *Task)
+	HandleReshuffleTasks()
 
 	AcceptOffer(offerId *mesosproto.OfferID, slaveId *mesosproto.SlaveID, task *Task)
 	DeclineOffer(offerId *mesosproto.OfferID)

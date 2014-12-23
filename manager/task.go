@@ -33,25 +33,26 @@ const (
 )
 
 type Task struct {
-	ID          string    `json:"id"`
-	DockerImage string    `json:"dockerimage"`
-	Mem         uint64    `json:"mem,string"`
-	Cpus        float64   `json:"cpus,string"`
-	Sla         string    `json:"sla"`
-	NodeType    string    `json:"nodetype"`
-	NodeName    string    `json:"nodename"`
-	NotMetered  bool      `json:"notmetered"`
-	Arguments   []string  `json:"arguments,omitempty"`
-	Volumes     []*Volume `json:"volumes,omitempty"`
-	Ports       []*Port   `json:"ports,omitempty"`
+	ID            string    `json:"id"`
+	DockerImage   string    `json:"dockerimage"`
+	Mem           uint64    `json:"mem,string"`
+	Cpus          float64   `json:"cpus,string"`
+	Sla           string    `json:"sla"`
+	NodeType      string    `json:"nodetype"`
+	NodeName      string    `json:"nodename"`
+	NotMetered    bool      `json:"notmetered"`
+	Reshuffleable bool      `json:"reshuffleable"`
+	Arguments     []string  `json:"arguments,omitempty"`
+	Volumes       []*Volume `json:"volumes,omitempty"`
+	Ports         []*Port   `json:"ports,omitempty"`
 
-	InternalID  string
-	SlaveID     string
-	ContainerID string
-	CreatedAt   int64
-	TaskInfo   *mesosproto.TaskInfo
-	RequestSent bool
-	Running     bool
+	InternalID    string
+	SlaveID       string
+	ContainerID   string
+	CreatedAt     int64
+	TaskInfo     *mesosproto.TaskInfo
+	RequestSent   bool
+	Running       bool
 }
 
 func CopyTask(source Task) Task {
@@ -61,4 +62,14 @@ func CopyTask(source Task) Task {
 	json.Unmarshal(jsonEncoded, &result)
 
 	return *result
+}
+
+func ResetTask(task *Task) {
+	task.InternalID = ""
+	task.SlaveID = ""
+	task.ContainerID = ""
+	task.CreatedAt = 0
+	task.TaskInfo = nil
+	task.RequestSent = false
+	task.Running = false
 }

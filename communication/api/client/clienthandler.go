@@ -58,6 +58,10 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 		self.writeResponse(responseWriter, http.StatusAccepted, fmt.Sprintf("Run task: %s", task.ID))
 		return
 
+	} else if strings.HasSuffix(path, "/task/reshuffle") && request.Method == "GET" {
+		self.Manager.HandleReshuffleTasks()
+		self.writeResponse(responseWriter, http.StatusAccepted, "Reshuffle tasks")
+		return
 	} else if strings.Contains(path, "/task/") && request.Method == "DELETE" {
 		pathElmts := strings.Split(path, "/")
 		foundATask := false
@@ -65,9 +69,8 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 			tasks := self.Manager.GetTasks()
 			for _, task := range tasks {
 				if strings.HasPrefix(task.InternalID,  pathElmts[3]) {
-					self.writeResponse(responseWriter, http.StatusOK, fmt.Sprintf("Kill task: %s", task.InternalID))
-
 					self.Manager.HandleDeleteTask(task)
+					self.writeResponse(responseWriter, http.StatusOK, fmt.Sprintf("Kill task: %s", task.InternalID))
 					foundATask = true
 				}
 			}
