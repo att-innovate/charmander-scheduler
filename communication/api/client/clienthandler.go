@@ -75,7 +75,7 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 		}
 	}
 
-	responseWriter.WriteHeader(http.StatusBadRequest)
+	self.writeError(responseWriter, http.StatusBadRequest, "wrong request")
 }
 
 func (self *ClientHandler) writeError(responseWriter http.ResponseWriter, code int, message string) {
