@@ -56,7 +56,7 @@ func init() {
 			if memObserved < OneMB {
 				taskRequest.Mem = uint64(TwoMB)
 			} else {
-				taskRequest.Mem = uint64((math.Ceil(float64(memObserved / OneMB) * 1.2))) // add 20% safety zone
+				taskRequest.Mem = uint64((math.Ceil(float64(memObserved / OneMB) * 1.1))) // add a 10% safety net
 			}
 		}
 	}

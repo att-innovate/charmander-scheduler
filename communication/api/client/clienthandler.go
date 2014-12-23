@@ -65,7 +65,7 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 			tasks := self.Manager.GetTasks()
 			for _, task := range tasks {
 				if strings.HasPrefix(task.InternalID,  pathElmts[3]) {
-					fmt.Fprintf(responseWriter, "\n Delete task: %s \n", pathElmts[3])
+					fmt.Fprintf(responseWriter, "\n Delete task: %s \n", task.InternalID)
 					self.Manager.HandleDeleteTask(task)
 					foundATask = true
 				}
