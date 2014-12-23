@@ -38,7 +38,7 @@ type ClientHandler struct {
 
 func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	path := html.EscapeString(request.URL.Path)
-	if strings.HasSuffix(path, "/execute") {
+	if strings.HasSuffix(path, "/task") && request.Method == "POST"  {
 		defer request.Body.Close()
 
 		task := &manager.Task{}
@@ -57,7 +57,15 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 
 		fmt.Fprintf(responseWriter, "\n-- done\n")
 		return
+
+	} else if strings.Contains(path, "/task/") && request.Method == "DELETE" {
+		pathElmts := strings.Split(path, "/")
+		if len(pathElmts) == 4 && len(pathElmts[3]) > 0 {
+			fmt.Fprintf(responseWriter, "\n Delete task: %s \n", pathElmts[3])
+		}
 	}
+
+	responseWriter.WriteHeader(http.StatusBadRequest)
 }
 
 func (self *ClientHandler) writeError(responseWriter http.ResponseWriter, code int, message string) {
