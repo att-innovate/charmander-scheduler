@@ -44,18 +44,18 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 		task := &manager.Task{}
 
 		if err := json.NewDecoder(request.Body).Decode(&task); err != nil {
-			self.writeError(responseWriter, http.StatusBadRequest, err.Error())
+			self.writeResponse(responseWriter, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		if len(task.DockerImage) == 0 || len(task.ID) == 0 || task.Mem == 0 {
-			self.writeError(responseWriter, http.StatusBadRequest, "docker_image and/or id and/or mem missing")
+			self.writeResponse(responseWriter, http.StatusBadRequest, "docker_image and/or id and/or mem missing")
 			return
 		}
 
 		self.Manager.HandleRunDockerImage(task)
 
-		fmt.Fprintf(responseWriter, "\n-- request received --\n")
+		self.writeResponse(responseWriter, http.StatusAccepted, "request received")
 		return
 
 	} else if strings.Contains(path, "/task/") && request.Method == "DELETE" {
@@ -65,7 +65,8 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 			tasks := self.Manager.GetTasks()
 			for _, task := range tasks {
 				if strings.HasPrefix(task.InternalID,  pathElmts[3]) {
-					fmt.Fprintf(responseWriter, "\n Delete task: %s \n", task.InternalID)
+					self.writeResponse(responseWriter, http.StatusOK, fmt.Sprintf("Kill task: %s", task.InternalID))
+
 					self.Manager.HandleDeleteTask(task)
 					foundATask = true
 				}
@@ -75,10 +76,10 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 		}
 	}
 
-	self.writeError(responseWriter, http.StatusBadRequest, "wrong request")
+	self.writeResponse(responseWriter, http.StatusBadRequest, "incorrect request")
 }
 
-func (self *ClientHandler) writeError(responseWriter http.ResponseWriter, code int, message string) {
+func (self *ClientHandler) writeResponse(responseWriter http.ResponseWriter, code int, message string) {
 	responseWriter.WriteHeader(code)
 	data := struct {
 			Code    int    `json:"code"`
