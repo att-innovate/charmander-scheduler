@@ -38,8 +38,8 @@ import (
 var Scheduler = &scheduler.Scheduler{}
 
 const (
-	OneMB = 1000000
-	TwoMB = 2000000
+	MBDivisor = 1000000
+	TwoMB = 2
 )
 
 func init() {
@@ -53,10 +53,10 @@ func init() {
 		memObservedRaw := manager.GetTaskIntelligence(taskRequest.ID, "mem")
 		if len(memObservedRaw) > 0 {
 			memObserved, _ := strconv.Atoi(memObservedRaw)
-			if memObserved < OneMB {
+			if memObserved < MBDivisor {
 				taskRequest.Mem = uint64(TwoMB)
 			} else {
-				taskRequest.Mem = uint64((math.Ceil(float64(memObserved / OneMB) * 1.1))) // add a 10% safety net
+				taskRequest.Mem = uint64((math.Ceil(float64(memObserved / MBDivisor) * 1.1))) // add a 10% safety net
 			}
 		}
 	}
