@@ -55,7 +55,7 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 
 		self.Manager.HandleRunDockerImage(task)
 
-		self.writeResponse(responseWriter, http.StatusAccepted, "request received")
+		self.writeResponse(responseWriter, http.StatusAccepted, fmt.Sprintf("Run task: %s", task.ID))
 		return
 
 	} else if strings.Contains(path, "/task/") && request.Method == "DELETE" {
