@@ -72,7 +72,6 @@ func init() {
 
 			for _, taskRequest := range taskRequests {
 				if matchFound { break }
-				if taskRequest.RequestSent { continue }
 				if !manager.ResourceRequirementsWouldMatch(offer, taskRequest) { continue }
 
 				manager.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
