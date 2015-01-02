@@ -82,14 +82,7 @@ type manager struct {
 }
 
 func (self *manager) Start() error {
-	retryCounter := 6
-
-	for ; retryCounter > 0; retryCounter-- {
-		if communication.MesosMasterReachable(self.master) { break }
-		time.Sleep(10 * time.Second)
-	}
-
-	if retryCounter == 0 {
+	if self.verifyConnectionWithMesos() == false {
 		return errors.New("Mesos unreachable")
 	}
 
@@ -122,6 +115,25 @@ func (self *manager) Start() error {
 
 	return nil
 }
+
+func (self *manager) verifyConnectionWithMesos() bool {
+	retryCounter := 6
+
+	for ; retryCounter > 0; retryCounter-- {
+		if communication.MesosMasterReachable(self.master) { break }
+		time.Sleep(10 * time.Second)
+	}
+
+	if retryCounter == 0 {
+		return false
+	} else {
+		//just to be save that Mesos is ready to accept messages after a restart
+		time.Sleep(5 * time.Second)
+	}
+
+	return true
+}
+
 
 func (self *manager) GetListenerIP() string {
 	return self.listening
