@@ -163,6 +163,10 @@ func (self *manager) GetOpenTaskRequests() []*managerInterface.Task {
 	return taskRegistry.OpenTaskRequests()
 }
 
+func (self *manager) GetRunningTasks() []*managerInterface.Task {
+	return taskRegistry.RunningTasks()
+}
+
 func (self *manager) SetTaskIntelligence(taskname string, attribute string, value string) {
 	taskIntelligence[formatTaskIntelligenceKey(taskname, attribute)] = value
 }
@@ -446,14 +450,15 @@ func (self *manager) HandleDeleteTask(task *managerInterface.Task) {
 }
 
 func (self *manager) HandleReshuffleTasks() {
-	tasks := self.GetTasks()
+	tasks := self.GetRunningTasks()
 	for _, task := range tasks {
 		if task.Reshuffleable == false { continue }
 		if task.Sla == managerInterface.SLA_ONE_PER_NODE { continue }
 
 		self.HandleDeleteTask(task)
-		managerInterface.ResetTask(task)
-		self.HandleRunDockerImage(task)
+		newTask := managerInterface.CopyTask(*task)
+		managerInterface.ResetTask(&newTask)
+		self.HandleRunDockerImage(&newTask)
 	}
 }
 

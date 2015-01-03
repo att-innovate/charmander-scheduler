@@ -104,3 +104,17 @@ func (taskRegistry *TaskRegistry) OpenTaskRequests() ([]*managerInterface.Task) 
 	return result
 }
 
+func (taskRegistry *TaskRegistry) RunningTasks() ([]*managerInterface.Task) {
+	taskRegistry.RLock()
+	defer taskRegistry.RUnlock()
+
+	result := make([]*managerInterface.Task, 0)
+
+	for _, task := range taskRegistry.tasks {
+		if task.Running == false { continue }
+		result = append(result, task)
+	}
+
+	return result
+}
+
