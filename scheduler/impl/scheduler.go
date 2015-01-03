@@ -59,6 +59,17 @@ func init() {
 				taskRequest.Mem = uint64((math.Ceil(float64(memObserved / MBDivisor) * 1.1))) // add a 10% safety net
 			}
 		}
+
+		nodeName := manager.GetTaskIntelligence(taskRequest.ID, "nodename")
+		if len(nodeName) > 0 {
+			taskRequest.NodeName = nodeName
+		}
+
+		sla := manager.GetTaskIntelligence(taskRequest.ID, "sla")
+		if len(sla) > 0 {
+			taskRequest.Sla = sla
+		}
+
 	}
 
 	Scheduler.ResourceOffers = func(manager managerInterface.Manager, offers []*mesosproto.Offer) {
