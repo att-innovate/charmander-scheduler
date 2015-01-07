@@ -38,7 +38,7 @@ type ClientHandler struct {
 
 func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	path := html.EscapeString(request.URL.Path)
-	if strings.HasSuffix(path, "/task") && request.Method == "POST"  {
+	if strings.HasSuffix(path, "/task") && request.Method == "POST" {
 		defer request.Body.Close()
 
 		task := &manager.Task{}
@@ -58,10 +58,18 @@ func (self *ClientHandler) ServeHTTP(responseWriter http.ResponseWriter, request
 		self.writeResponse(responseWriter, http.StatusAccepted, fmt.Sprintf("Run task: %s", task.ID))
 		return
 
+	} else if strings.HasSuffix(path, "/task") && request.Method == "GET"  {
+		responseWriter.WriteHeader(http.StatusOK)
+		responseWriter.Header().Set("Content-Type", "application/json")
+		data, _ := json.MarshalIndent(self.Manager.GetTasks(), "", "    ")
+		fmt.Fprintf(responseWriter, string(data))
+		return
+
 	} else if strings.HasSuffix(path, "/task/reshuffle") && request.Method == "GET" {
 		self.Manager.HandleReshuffleTasks()
 		self.writeResponse(responseWriter, http.StatusAccepted, "Reshuffle tasks")
 		return
+
 	} else if strings.Contains(path, "/task/") && request.Method == "DELETE" {
 		pathElmts := strings.Split(path, "/")
 		foundATask := false
