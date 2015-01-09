@@ -168,7 +168,11 @@ func (self *manager) GetRunningTasks() []*managerInterface.Task {
 }
 
 func (self *manager) SetTaskIntelligence(taskname string, attribute string, value string) {
-	taskIntelligence[formatTaskIntelligenceKey(taskname, attribute)] = value
+	if len(value) > 0 {
+		taskIntelligence[formatTaskIntelligenceKey(taskname, attribute)] = value
+	} else {
+		delete(taskIntelligence, formatTaskIntelligenceKey(taskname, attribute))
+	}
 }
 
 func (self *manager) GetTaskIntelligence(taskname string, attribute string) string {
