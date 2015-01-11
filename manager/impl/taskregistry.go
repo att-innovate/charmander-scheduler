@@ -90,31 +90,29 @@ func (taskRegistry *TaskRegistry) Tasks() ([]*managerInterface.Task) {
 	return result
 }
 
+type filter func(task *managerInterface.Task) bool
+
 func (taskRegistry *TaskRegistry) OpenTaskRequests() ([]*managerInterface.Task) {
-	taskRegistry.RLock()
-	defer taskRegistry.RUnlock()
-
-	result := make([]*managerInterface.Task, 0)
-
-	for _, task := range taskRegistry.tasks {
-		if task.RequestSent { continue }
-		result = append(result, task)
-	}
-
-	return result
+//	if task.RequestSent { continue }
+	return taskRegistry.filterTasks(func(task *managerInterface.Task) bool {return task.RequestSent})
 }
 
 func (taskRegistry *TaskRegistry) RunningTasks() ([]*managerInterface.Task) {
+// 	if task.Running == false { continue }
+
+	return taskRegistry.filterTasks(func(task *managerInterface.Task) bool {return task.Running == false})
+}
+
+func (taskRegistry *TaskRegistry) filterTasks(suppress filter) ([]*managerInterface.Task) {
 	taskRegistry.RLock()
 	defer taskRegistry.RUnlock()
 
 	result := make([]*managerInterface.Task, 0)
 
 	for _, task := range taskRegistry.tasks {
-		if task.Running == false { continue }
+		if suppress(task) { continue }
 		result = append(result, task)
 	}
 
 	return result
 }
-
