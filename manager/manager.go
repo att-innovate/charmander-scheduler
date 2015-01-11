@@ -38,9 +38,10 @@ type Manager interface {
 	GetTasks() []*Task
 	GetNodes() []*Node
 
-	GetOpenTaskRequests() []*Task
+	GetOpenTaskRequestsNoSla() []*Task
 	ResourceRequirementsWouldMatch(offer *mesosproto.Offer, taskRequest *Task) bool
 
+	GetOpenTaskRequests() []*Task
 	GetRunningTasks() []*Task
 
 	SetTaskIntelligence(taskname string, attribute string, value string)

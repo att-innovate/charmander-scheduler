@@ -163,6 +163,10 @@ func (self *manager) GetOpenTaskRequests() []*managerInterface.Task {
 	return taskRegistry.OpenTaskRequests()
 }
 
+func (self *manager) GetOpenTaskRequestsNoSla() []*managerInterface.Task {
+	return taskRegistry.OpenTaskRequestsNoSla()
+}
+
 func (self *manager) GetRunningTasks() []*managerInterface.Task {
 	return taskRegistry.RunningTasks()
 }

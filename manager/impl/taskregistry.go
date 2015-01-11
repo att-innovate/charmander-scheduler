@@ -93,13 +93,14 @@ func (taskRegistry *TaskRegistry) Tasks() ([]*managerInterface.Task) {
 type filter func(task *managerInterface.Task) bool
 
 func (taskRegistry *TaskRegistry) OpenTaskRequests() ([]*managerInterface.Task) {
-//	if task.RequestSent { continue }
 	return taskRegistry.filterTasks(func(task *managerInterface.Task) bool {return task.RequestSent})
 }
 
-func (taskRegistry *TaskRegistry) RunningTasks() ([]*managerInterface.Task) {
-// 	if task.Running == false { continue }
+func (taskRegistry *TaskRegistry) OpenTaskRequestsNoSla() ([]*managerInterface.Task) {
+	return taskRegistry.filterTasks(func(task *managerInterface.Task) bool {return task.RequestSent || len(task.Sla) > 0})
+}
 
+func (taskRegistry *TaskRegistry) RunningTasks() ([]*managerInterface.Task) {
 	return taskRegistry.filterTasks(func(task *managerInterface.Task) bool {return task.Running == false})
 }
 
