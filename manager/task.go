@@ -30,7 +30,7 @@ import (
 
 const (
 	SLA_ONE_PER_NODE = "one-per-node"
-	SINGLETON = "singleton"
+	SLA_SINGLETON = "singleton"
 )
 
 type Task struct {

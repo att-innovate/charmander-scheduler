@@ -218,7 +218,7 @@ func (self *manager) HandleFrameworkRegistered(frameworkId string) {
 func (self *manager) HandleResourceOffered(offers []*mesosproto.Offer) {
 	self.updateNodeRegistry(offers)
 
-	offers= self.enforceSLAs(offers)
+	offers= self.handleSlaRequests(offers)
 
 	if self.scheduler != nil && self.scheduler.ResourceOffers != nil {
 		self.scheduler.ResourceOffers(self, offers)
@@ -253,7 +253,7 @@ func (self *manager) updateNodeRegistry(offers []*mesosproto.Offer) {
 	}
 }
 
-func (self *manager) enforceSLAs(offers []*mesosproto.Offer) []*mesosproto.Offer {
+func (self *manager) handleSlaRequests(offers []*mesosproto.Offer) []*mesosproto.Offer {
 	result := offers
 	var taskRequests []*managerInterface.Task
 	taskRequests = self.GetOpenTaskRequests()
@@ -269,6 +269,13 @@ func (self *manager) enforceSLAs(offers []*mesosproto.Offer) []*mesosproto.Offer
 						self.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
 						result = removeOfferFromList(result, offer)
 					}
+				}
+			}
+		} else if taskRequest.Sla == managerInterface.SLA_SINGLETON {
+			for _, offer := range offers {
+				if self.ResourceRequirementsWouldMatch(offer, taskRequest) {
+					self.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
+					result = removeOfferFromList(result, offer)
 				}
 			}
 		}
@@ -344,6 +351,9 @@ func (self *manager) HandleRunDockerImage(task *managerInterface.Task) {
 			newTask.NodeName= node.NodeName
 			self.handleRunDockerImageImpl(&newTask)
 		}
+	} else if task.Sla == managerInterface.SLA_SINGLETON {
+		if self.isDuplicateRunRequest(task) { return }
+		self.handleRunDockerImageImpl(task)
 	} else {
 		self.handleRunDockerImageImpl(task)
 	}
