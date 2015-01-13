@@ -262,16 +262,7 @@ func (self *manager) handleSlaRequests(offers []*mesosproto.Offer) []*mesosproto
 		if taskRequest.Running { continue }
 		if len(taskRequest.Sla) == 0 { continue }
 
-		if taskRequest.Sla == managerInterface.SLA_ONE_PER_NODE {
-			for _, offer := range offers {
-				if resolveNodeName(*offer) == taskRequest.NodeName {
-					if self.ResourceRequirementsWouldMatch(offer, taskRequest) {
-						self.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
-						result = removeOfferFromList(result, offer)
-					}
-				}
-			}
-		} else if taskRequest.Sla == managerInterface.SLA_SINGLETON {
+		if taskRequest.Sla == managerInterface.SLA_ONE_PER_NODE || taskRequest.Sla == managerInterface.SLA_SINGLETON {
 			for _, offer := range offers {
 				if self.ResourceRequirementsWouldMatch(offer, taskRequest) {
 					self.AcceptOffer(offer.GetId(), offer.SlaveId, taskRequest)
@@ -282,16 +273,6 @@ func (self *manager) handleSlaRequests(offers []*mesosproto.Offer) []*mesosproto
 	}
 
 	return result
-}
-
-func resolveNodeName(offer mesosproto.Offer) string {
-	for _, attribute := range offer.GetAttributes() {
-		if *attribute.Name == "nodename" {
-			return attribute.Text.GetValue()
-		}
-	}
-
-	return "notfound"
 }
 
 func removeOfferFromList(offers []*mesosproto.Offer, offer *mesosproto.Offer) []*mesosproto.Offer {
