@@ -338,6 +338,7 @@ func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateM
 
 func (self *manager) HandleRunDockerImage(task *managerInterface.Task) {
 	if task.Sla == managerInterface.SLA_ONE_PER_NODE {
+		if self.isDuplicateRunRequest(task) { return }
 		for _, node := range nodeRegistry.Nodes() {
 			newTask := managerInterface.CopyTask(*task)
 			newTask.NodeName= node.NodeName
@@ -346,6 +347,14 @@ func (self *manager) HandleRunDockerImage(task *managerInterface.Task) {
 	} else {
 		self.handleRunDockerImageImpl(task)
 	}
+}
+
+func (self *manager) isDuplicateRunRequest(newTask *managerInterface.Task) bool {
+	tasks := self.GetTasks()
+	for _, task := range tasks {
+		if task.ID == newTask.ID { return true }
+	}
+	return false
 }
 
 func (self *manager) handleRunDockerImageImpl(task *managerInterface.Task) {
