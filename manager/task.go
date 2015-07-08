@@ -31,6 +31,10 @@ import (
 const (
 	SLA_ONE_PER_NODE = "one-per-node"
 	SLA_SINGLETON = "singleton"
+
+	NETWORK_MODE_BRIDGE = "bridge"
+	NETWORK_MODE_HOST = "host"
+	NETWORK_MODE_NONE = "none"
 )
 
 type Task struct {
@@ -46,6 +50,7 @@ type Task struct {
 	Arguments     []string  `json:"arguments,omitempty"`
 	Volumes       []*Volume `json:"volumes,omitempty"`
 	Ports         []*Port   `json:"ports,omitempty"`
+	NetworkMode   string    `json:"networkmode"`
 
 	InternalID    string
 	SlaveID       string

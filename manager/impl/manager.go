@@ -304,7 +304,7 @@ func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateM
 	case  *status.State == mesosproto.TaskState_TASK_LOST:
 		switch {
 		case strings.Contains(status.GetMessage(), "Task has duplicate ID"):
-			// ignore
+		// ignore
 		case strings.Contains(status.GetMessage(), "is no longer valid"):
 			task, _ := taskRegistry.Fetch(status.GetTaskId().GetValue())
 			task.RequestSent = false
@@ -374,24 +374,35 @@ func (self *manager) handleRunDockerImageImpl(task *managerInterface.Task) {
 		}
 
 		containerInfo.Volumes = append(containerInfo.Volumes, &mesosproto.Volume{
-				ContainerPath: &volume.ContainerPath,
-				HostPath:      &volume.HostPath,
-				Mode:          &mode,
-			})
+			ContainerPath: &volume.ContainerPath,
+			HostPath:      &volume.HostPath,
+			Mode:          &mode,
+		})
 	}
 	for _, port := range task.Ports {
 		dockerInfo.PortMappings = append(dockerInfo.PortMappings, &mesosproto.ContainerInfo_DockerInfo_PortMapping{
-				ContainerPort: &port.ContainerPort,
-				HostPort:      &port.HostPort,
-			})
+			ContainerPort: &port.ContainerPort,
+			HostPort:      &port.HostPort,
+		})
 		portResources = append(portResources, &mesosproto.Value_Range{
-				Begin: proto.Uint64(uint64(port.HostPort)),
-				End:   proto.Uint64(uint64(port.HostPort)),
-			})
+			Begin: proto.Uint64(uint64(port.HostPort)),
+			End:   proto.Uint64(uint64(port.HostPort)),
+		})
 	}
+
 	if len(task.Ports) > 0 {
+		// port mapping only works in bridge mode
 		dockerInfo.Network= mesosproto.ContainerInfo_DockerInfo_BRIDGE.Enum()
+	} else if len(task.NetworkMode) > 0 {
+		if task.NetworkMode == managerInterface.NETWORK_MODE_BRIDGE {
+			dockerInfo.Network = mesosproto.ContainerInfo_DockerInfo_BRIDGE.Enum()
+		} else if task.NetworkMode == managerInterface.NETWORK_MODE_HOST {
+			dockerInfo.Network = mesosproto.ContainerInfo_DockerInfo_HOST.Enum()
+		} else if task.NetworkMode == managerInterface.NETWORK_MODE_NONE {
+			dockerInfo.Network = mesosproto.ContainerInfo_DockerInfo_NONE.Enum()
+		}
 	}
+
 
 	commandInfo := &mesosproto.CommandInfo{
 		Shell: proto.Bool(false),
