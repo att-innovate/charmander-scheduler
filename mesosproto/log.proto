@@ -18,7 +18,7 @@
 
 package mesosproto;
 
-import "code.google.com/p/gogoprotobuf/gogoproto/gogo.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 // Represents a "promise" that a replica has made. A promise is
 // *implicitly* valid for _all_ future actions that get performed on

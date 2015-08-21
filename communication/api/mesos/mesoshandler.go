@@ -28,7 +28,7 @@ import (
 	"strings"
 	"io/ioutil"
 
-	"code.google.com/p/gogoprotobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"github.com/golang/glog"
 
 	"github.com/att-innovate/charmander-scheduler/manager"

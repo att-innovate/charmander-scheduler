@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"code.google.com/p/gogoprotobuf/proto"
+	"github.com/gogo/protobuf/proto"
 
 	"github.com/att-innovate/charmander-scheduler/upid"
 )
