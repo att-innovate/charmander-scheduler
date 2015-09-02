@@ -43,8 +43,6 @@ const (
 )
 
 func init() {
-	glog.Infoln("Initializing scheduler ...")
-
 	Scheduler.Registered = func(manager managerInterface.Manager, frameworkId string) {
 		glog.Infoln("Registered FrameworkId ", frameworkId)
 	}
