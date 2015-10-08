@@ -16,5 +16,6 @@ d) Deploy/run cAdvisor on Charmander
 $ ./start_cadvisor
 
 e) Kill cAdvisor
-$
+$ ./kill_cadvisor
+
 
