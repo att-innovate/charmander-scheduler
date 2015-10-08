@@ -18,8 +18,6 @@
 
 package mesosproto;
 
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-
 // Describes a state entry, a versioned (via a UUID) key/value pair.
 message Entry {
   required string name = 1;
