@@ -1,0 +1,3 @@
+#!/bin/bash
+
+curl -s -X DELETE -H "Accept: application/json" -H "Content-Type: application/json" localhost:7075/client/task/ca
