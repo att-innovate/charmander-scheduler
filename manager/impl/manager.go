@@ -297,7 +297,7 @@ func (self *manager) HandleStatusMessage(statusMessage *mesosproto.StatusUpdateM
 		task, _ := taskRegistry.Fetch(status.GetTaskId().GetValue())
 		task.Running= true
 		task.SlaveID= status.GetSlaveId().GetValue()
-		glog.Infof("Running: %s on Slave: %s", task.InternalID, task.SlaveID)
+		managerInterface.UpdateTaskWithDockerInfo(task, status.GetData())
 	case  *status.State == mesosproto.TaskState_TASK_FAILED:
 		taskRegistry.Delete(status.GetTaskId().GetValue())
 		glog.Infoln("Task Failed: ", status.GetTaskId().GetValue())

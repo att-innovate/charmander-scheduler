@@ -25,6 +25,7 @@ package manager
 import (
 	"encoding/json"
 
+	"github.com/golang/glog"
 	"github.com/att-innovate/charmander-scheduler/mesosproto"
 )
 
@@ -54,7 +55,9 @@ type Task struct {
 
 	InternalID    string
 	SlaveID       string
-	ContainerID   string
+	DockerID      string
+	DockerName    string
+	ProcessID     uint
 	CreatedAt     int64
 	TaskInfo     *mesosproto.TaskInfo
 	RequestSent   bool
@@ -73,9 +76,44 @@ func CopyTask(source Task) Task {
 func ResetTask(task *Task) {
 	task.InternalID = ""
 	task.SlaveID = ""
-	task.ContainerID = ""
+	task.DockerID = ""
+	task.DockerName = ""
+	task.ProcessID = 0
 	task.CreatedAt = 0
 	task.TaskInfo = nil
 	task.RequestSent = false
 	task.Running = false
+}
+
+// Handling Docker Inspect Output
+
+type DockerTask struct {
+	DockerId string `json:"Id"`
+	DockerName string `json:"Name"`
+	DockerState json.RawMessage `json:"State"`
+}
+
+type DockerState struct {
+	Pid uint `json:"Pid"`
+}
+
+func UpdateTaskWithDockerInfo(task *Task, dockerInspectOutput []byte) {
+//	glog.Infof("Docker Inspect: %s", dockerInspectOutput)
+	var dockerTasks []DockerTask
+	err := json.Unmarshal(dockerInspectOutput, &dockerTasks)
+	if err != nil {
+		glog.Errorf("UpdateTaskWithDockerInfo error: %v\n", err)
+		return
+	}
+	task.DockerID = dockerTasks[0].DockerId
+	task.DockerName = dockerTasks[0].DockerName[1:]
+
+	var dockerState DockerState
+	err  = json.Unmarshal(dockerTasks[0].DockerState, &dockerState)
+	if err != nil {
+		glog.Errorf("UpdateTaskWithDockerInfo error: %v\n", err)
+		return
+	}
+
+	task.ProcessID = dockerState.Pid
 }
