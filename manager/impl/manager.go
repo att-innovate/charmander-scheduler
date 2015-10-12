@@ -119,6 +119,8 @@ func (self *manager) Start() error {
 func (self *manager) verifyConnectionWithMesos() bool {
 	retryCounter := 6
 
+	time.Sleep(5 * time.Second)
+
 	for ; retryCounter > 0; retryCounter-- {
 		if communication.MesosMasterReachable(self.master) { break }
 		time.Sleep(10 * time.Second)
