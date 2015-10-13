@@ -112,6 +112,9 @@ func (self *manager) Start() error {
 	communication.InitRestHandler(self)
 	redis.InitRedisUpdater(self)
 
+	//sleep some more to be ready to accept requests from Mesos
+	time.Sleep(5 * time.Second)
+
 	self.announceFramework()
 
 	return nil
