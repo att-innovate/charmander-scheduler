@@ -87,6 +87,7 @@ func (self *manager) Start() error {
 	}
 
 	self.frameworkInfo.User = proto.String("root")
+	self.frameworkInfo.Checkpoint = proto.Bool(false)
 
 	// set default hostname
 	if self.frameworkInfo.GetHostname() == "" {
